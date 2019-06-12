@@ -8,15 +8,19 @@ load results\SpiralSim\sim1Vr10.mat
 % Simulation Setup
 uav_v     = 10;
 turnrate  = 20; 
-pitchrate = 10;
+pitchrate = 20;
 Radius = 50;
-uavZc = 35;
 
 psi = deg2rad(0);
 gam = deg2rad(pitchrate);
 lam =  1;
 K = 5; % Number of turns
 ovfDF = {@NoVDecay};
+
+ZOffset = 0;
+A = -Radius*(tan(gam)/lam);
+theta = pi;
+uavZc = A * (-theta) + ZOffset;
 
 % Plot Options
 height = 100;

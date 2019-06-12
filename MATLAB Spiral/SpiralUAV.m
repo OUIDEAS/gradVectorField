@@ -8,7 +8,7 @@ addpath results\SpiralSim;
 %% UAV parameters
 uav_v     = 10;
 turnrate  = 20; 
-pitchrate = 10;
+pitchrate = 20;
 
 psi = deg2rad(0);
 gam = deg2rad(pitchrate);
