@@ -21,7 +21,8 @@ ovfYc = 0;
 ovfTheta = atan2(ovfYc,ovfXc);
 
 %% Animation options
-fig1=figure; set(gcf, 'Color', 'w');    hold on;
+fig1=figure; set(gcf, 'Color', 'w');    
+hold on;
 bShowVectorField=true;
 bRunUAV=true;
 fig1.Position = [0 0 1200 800];
@@ -33,7 +34,7 @@ G=-1;      %Convergence field
 H=-1;      %Circulation field
 L=0;       %Time-varying field
 
-cVFR = CircleVectorField('Straight',0);
+cVFR = CircleVectorField('Straight',2);
 cVFR.G=G;
 cVFR.H=H;
 cVFR.L=L;
@@ -49,7 +50,7 @@ clear avoidVF;
 avoidVF = {};
 ovfOpt = {};
 
-[avoidVF, ovfOpt] = makeOVF(ovfXc, ovfYc, 1, ovfTheta,...
+[avoidVF, ovfOpt] = makeOVF(ovfXc, ovfYc, 2, ovfTheta,...
     ovfDF{1}, 'Obstacle 1', avoidVF, ovfOpt);
 
 opt.bCustomRange = 10; 
@@ -83,14 +84,13 @@ end
 hold off;
 axis equal;
 xlim([-8 8]);
-ylim([-2 4]);
+ylim([-4 4]);
 set(gca, 'FontSize', 18)
 grid on;
 xlabel('X-Position [-]', 'FontSize', 14);
 ylabel('Y-Position [-]', 'FontSize', 14);
 
 %% Decay functions go here
-
 
 function G = VTanh(rrin)
     rrt = 2.*pi.*(1 - rrin);

@@ -67,7 +67,7 @@ classdef VFUAV
         function vel = GetMaxTurnrate(obj)
             vel = obj.mTurnrate;
         end
-        function obj=UpdateControlFromVF(obj,VF_obj,t,opt)
+        function obj=UpdateControlFromVF(obj,VF_obj,t,opt,obs_radius)
             %current state of the vehicle
             dt = obj.m_dt;
 
@@ -115,7 +115,7 @@ classdef VFUAV
             %%
             %fprintf('%4.3f (x=%4.2f,y=%4.2f) -> VF %4.2f T %4.2f V %4.2f\n',t,uav_x,uav_y,vf_angle,theta,uav_v);
             
-            %update new position/heading/velocity
+            % new position/heading/velocity
             if(obj.bVFControlHeading || obj.bVFControlVelocity)
                 if(obj.bVFControlHeading)
                     theta=vf_angle;

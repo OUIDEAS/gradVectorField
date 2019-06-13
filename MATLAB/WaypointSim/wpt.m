@@ -1,11 +1,10 @@
-classdef wpt
-    
+classdef wpt    
     
     properties
         currentWP = 1
         WPx = []
         WPy = []
-        WPradius = 50
+        WPradius = 20
         active = true
         
         wpx = []
@@ -68,12 +67,8 @@ classdef wpt
 
                 plot(cxs+self.WPx(i),cys+self.WPy(i),'r');
                 
-            end
-            
-            
-            
+            end          
         end
-        
     end
 end
 

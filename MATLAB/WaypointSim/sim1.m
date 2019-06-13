@@ -8,10 +8,10 @@ addpath results\sim1;
 uav_v = 10;
 turnrate = 20;
 
-uavXc = -400;
+uavXc = -8;
 uavYc = 0;
 uavTheta = 0;
-dt = 0.5;
+dt = 0.001;
 t_list=0:dt:(30./uav_v);
 
 %% Obstacle field initial conditions
@@ -49,7 +49,7 @@ for i = 1:length(ovfDF)
     H=-1;      %Circulation field
     L=0;       %Time-varying field
 
-    cVFR = CircleVectorField('Straight',1);
+    cVFR = CircleVectorField('Straight',2);
     cVFR.G=G;
     cVFR.H=H;
     cVFR.L=L;
@@ -65,7 +65,7 @@ for i = 1:length(ovfDF)
     avoidVF = {};
     ovfOpt = {};
 
-    [avoidVF, ovfOpt] = makeOVF(ovfXc, ovfYc, 1, ovfTheta,...
+    [avoidVF, ovfOpt] = makeOVF(ovfXc, ovfYc, 2, ovfTheta,...
         ovfDF{i}, 'Obstacle 1', avoidVF, ovfOpt);
 
     %% Run simulation
@@ -121,7 +121,7 @@ for i = 1:length(ovfDF)
     uavData.position{i} = xVUAV.mPositionHistory';
     uavData.error{i}(:,1) = errX;
     uavData.error{i}(:,2) = errY;
-    
+     
     clear xVUAV.mPositionHistory;
     clear errX;
     clear errY;
@@ -134,9 +134,6 @@ save(['results\sim1\sim1Vr' num2str(uav_v) '.mat'], 'uavData');
 function G = VTanh(rrin)
     rrt = 2.*pi.*(1 - rrin);
     G = 0.5.*(tanh(rrt)+1);
-%     if rrin >=1.4
-%         G = 0;
-%     end
 end
 
 function G = NoVDecay(rrin)

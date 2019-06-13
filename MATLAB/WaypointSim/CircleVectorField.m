@@ -99,7 +99,7 @@ classdef CircleVectorField
             obj.xc = newxy(1);
             obj.yc = newxy(2);
         end
-        function RET = PlotFieldAroundRadius(obj,axis,opt)
+        function RET = PlotFieldAroundRadius(obj,axis,opt,obs_radius)
             limit = obj.mCircleRadius*1.5;
             NumPoints = 0.5;
             if(isfield(opt,'bCustomRange'))
@@ -148,7 +148,7 @@ classdef CircleVectorField
                     s.r=obj.mCircleRadius;
                     r_at_now = sqrt((x-obj.xc)^2+(y-obj.yc)^2);
                     Rxx(i,ii) = r_at_now;
-                    P(i,ii)=1;
+                    P(i,ii) = 1;
                     if(isfield(opt,'DecayFunc'))
                         P(i,ii) = opt.DecayFunc(r_at_now);
                     end
@@ -158,6 +158,8 @@ classdef CircleVectorField
                     if(~isempty(VFUAV))
                         s.bNormVFVectors=VFUAV.bNormVFVectors;
                     %s.Norm=false;
+                    
+                    
                     %s.bUseVRel=false;
                         uav_vel = VFUAV.GetVelocityV();
                         s.uav_vx=uav_vel(1);
@@ -333,8 +335,8 @@ classdef CircleVectorField
         function V = Vconv_c(o,s) 
             V1 = -o.alpha1_circ(s).*[2.*(s.x-s.xc);2.*(s.y-s.yc);0]./s.r;%^2;
             V2 = o.alpha2_circ(s).*[0;0;1];
-            V = V1+V2;
-%             V = sqrt(V1.^2+V2.^2);
+%             V = V1+V2;
+            V = sqrt(V1.^2+V2.^2);
         end
         function V = Vcirc_c(o,s) 
             V = [2.*(s.y-s.yc);-2.*(s.x-s.xc);0];
