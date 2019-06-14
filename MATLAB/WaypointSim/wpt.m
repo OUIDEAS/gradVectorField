@@ -4,7 +4,7 @@ classdef wpt
         currentWP = 1
         WPx = []
         WPy = []
-        WPradius = 20
+        WPradius = 10
         active = true
         
         wpx = []
@@ -65,7 +65,7 @@ classdef wpt
             cys = self.WPradius*sin(theta);
             for i=1:length(self.WPx)
 
-                plot(cxs+self.WPx(i),cys+self.WPy(i),'r');
+                plot(cxs+self.WPx(i),cys+self.WPy(i),'m');
                 
             end          
         end

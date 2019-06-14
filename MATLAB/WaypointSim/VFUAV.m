@@ -103,7 +103,7 @@ classdef VFUAV
                     VFx = opt.oVFList{k}.VF;
                     avoid = VFx.GetVF_at_XY(s);
                     r_at_now = sqrt((uav_x-VFx.xc)^2+(uav_y-VFx.yc)^2);
-                    P = opt.DecayFunc(r_at_now);
+                    P = opt.DecayFunc(r_at_now,obs_radius);
                     Uavoid(k) = avoid.F(1) * P;
                     Vavoid(k) = avoid.F(2) * P;
                 end

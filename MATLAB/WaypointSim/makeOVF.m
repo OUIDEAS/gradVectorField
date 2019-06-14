@@ -2,7 +2,7 @@ function [list, optList] = makeOVF(xc,yc,r_in,initTheta,decayFunc,legendName,lis
 %% Create vector field object using Goncalves method
 oVFa = CircleVectorField('Gradient',r_in);
 oVFa.G = 1;  % Convergence weight
-oVFa.H = 1;  % Circulation weight
+oVFa.H = 500;  % Circulation weight
 oVFa.L = 0;  % Time varying weight
 if initTheta < 0
     oVFa.H = oVFa.H;
@@ -20,10 +20,10 @@ oVF1.VF = oVFa;
 oVF1.plotcenter = [oVFa.xc,oVFa.yc];
 oVF1.plotrange = r_in.*3;
 oVF1.plotradius = r_in;
-bShowVectorField= true;
-opt.bNormVFVectors = true;
-opt.bPlotQuiverNorm = true;
-opt.bShowCircle = true;
+bShowVectorField= false;
+opt.bNormVFVectors = false;
+opt.bPlotQuiverNorm = false;
+opt.bShowCircle = false;
 opt.CustomNumberOfPoints=50;
 opt.DecayFunc = decayFunc;
 

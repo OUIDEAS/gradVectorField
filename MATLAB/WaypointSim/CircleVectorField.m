@@ -99,7 +99,7 @@ classdef CircleVectorField
             obj.xc = newxy(1);
             obj.yc = newxy(2);
         end
-        function RET = PlotFieldAroundRadius(obj,axis,opt,obs_radius)
+        function RET = PlotFieldAroundRadius(obj,axis,opt)
             limit = obj.mCircleRadius*1.5;
             NumPoints = 0.5;
             if(isfield(opt,'bCustomRange'))
@@ -150,7 +150,7 @@ classdef CircleVectorField
                     Rxx(i,ii) = r_at_now;
                     P(i,ii) = 1;
                     if(isfield(opt,'DecayFunc'))
-                        P(i,ii) = opt.DecayFunc(r_at_now);
+                        P(i,ii) = opt.DecayFunc(r_at_now, s.r);
                     end
                     s.G=obj.G;
                     s.H=obj.H;
@@ -260,11 +260,15 @@ classdef CircleVectorField
                 end
             end
             
-            RET_H = quiver(axis,x_q,y_q,nu,nv,'Color',opt.Color);
-            
-            if(~isempty(obj.mLegendName))
-                set(RET_H,'DisplayName',obj.mLegendName);
+            if opt.bPlotQuiverNorm == true
+                RET_H = quiver(axis,x_q,y_q,nu,nv,'Color',opt.Color);
+            else
+                RET_H = 0;
             end
+%             
+%             if(~isempty(obj.mLegendName))
+%                 set(RET_H,'DisplayName',0);
+%             end
             %alpha(1);
 
     %         quiver(x_q,y_q,ucirc,vcirc,'Color',[1 0 0]);
@@ -280,8 +284,9 @@ classdef CircleVectorField
                 end
                 xunit = Rc * cos(th) + x_c;
                 yunit = Rc * sin(th) + y_c;
-                h = plot(axis,xunit, yunit,'HandleVisibility','on','Color','k','LineWidth',2);
-            end
+%                 h = plot(axis,xunit, yunit,'HandleVisibility','on','Color','k','LineWidth',2);
+             end
+            
             RET.H = RET_H;
             RET.QP = QP;
             RET.Q = Q;
