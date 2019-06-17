@@ -65,6 +65,7 @@ classdef CircleVectorField
             elseif(obj.bLyapunovVF)
                 V.F = obj.VFLyapunov(s);
             elseif(obj.bStraightVF)
+                s.line_theta = si.line_theta;
                 V = obj.VFStraight(s);
             else
                 error('no VF type');
@@ -150,7 +151,11 @@ classdef CircleVectorField
                     Rxx(i,ii) = r_at_now;
                     P(i,ii) = 1;
                     if(isfield(opt,'DecayFunc'))
-                        P(i,ii) = opt.DecayFunc(r_at_now, s.r);
+                        try
+                            P(i,ii) = opt.DecayFunc(r_at_now, s.r*0.7);
+                        catch
+                            disp('error');
+                        end
                     end
                     s.G=obj.G;
                     s.H=obj.H;
@@ -179,6 +184,7 @@ classdef CircleVectorField
                         VF_res = obj.VFLyapunov(s);
                         VF_list{i,ii} = VF_res;
                     elseif(obj.bStraightVF)
+                        s.line_theta = opt.line_theta;
                         VF_res = obj.VFStraight(s);
                         VF_list_tv{i,ii}=VF_res.tv;
                         VF_list_circ{i,ii}=VF_res.circ;
@@ -285,6 +291,11 @@ classdef CircleVectorField
                 xunit = Rc * cos(th) + x_c;
                 yunit = Rc * sin(th) + y_c;
                 h = plot(axis,xunit, yunit,'HandleVisibility','on','Color','k','LineWidth',2);
+                
+                Rc = obj.mCircleRadius*0.7;
+                xunit = Rc * cos(th) + x_c;
+                yunit = Rc * sin(th) + y_c;
+                h = plot(axis,xunit, yunit,'HandleVisibility','on','Color','r','LineWidth',2);
              end
             
             RET.H = RET_H;
@@ -300,9 +311,16 @@ classdef CircleVectorField
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function V = VFStraight(obj,s)
-            Vcnv=s.G.*[0;s.y;s.z];
-            Vcrc=s.H.*[-1;0;0];
-            TV = 0;
+            a = 1*cos(s.line_theta);
+            b = 1*sin(s.line_theta);
+            a1 = a*(s.x-s.xc)+b*(s.y-s.yc);
+            ga1 = [a;b;0];
+            a2 = s.z;
+            ga2 = [0;0;1];
+            Vcnv = -s.G.*(a1*ga1+a2*ga2);
+            Vcrc = s.H*cross(ga1,ga2);
+            TV = [0;0;0];
+
             if(s.bNormVFVectors)
                 Vcnv = Vcnv/norm(Vcnv);
                 if(norm(Vcrc) ~=0)

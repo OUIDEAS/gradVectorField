@@ -1,0 +1,11 @@
+*.asv
+*.fig
+*.dat
+*.mat
+*.log
+*.png
+*.mp4
+*.eps
+*.pyc
+*.pyd
+*.jpg

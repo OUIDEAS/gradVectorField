@@ -75,7 +75,7 @@ classdef UAV
             self.cmdHeading = VF_heading;
             
             self.vx = self.v*cos(theta);
-            self.vy = self.v*sin(theta);
+            self.vy = self.v*sin(theta)+0.25;
             self.x = self.x+self.vx*self.dt;
             self.y = self.y+self.vy*self.dt;
             

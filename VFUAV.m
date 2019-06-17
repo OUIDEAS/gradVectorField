@@ -5,10 +5,12 @@ classdef VFUAV
         mVelocityVHistory
         mHeadingHistory
         mTurnrate
-        uav_v_range = [-2 2];
+        uav_v_range = [1 8];
         bVFControlHeading=~true;
         bVFControlVelocity=true;
         bDubinsPathControl=true;
+        Wind = false;
+        WindMag = 0;
         m_dt;
         mID;
         bNormVFVectors=false;
@@ -70,11 +72,16 @@ classdef VFUAV
         function obj=UpdateControlFromVF(obj,VF_obj,t,opt)
             %current state of the vehicle
             dt = obj.m_dt;
-
+            obs_radius = opt.DecayRadius;
             theta = obj.GetHeading();
             pos = obj.GetPosition();
-            uav_x = pos(1);
+            uav_x = pos(1)
             uav_y = pos(2);
+            
+            if obj.Wind == true
+                uav_y = gust(uav_x,uav_y,0,obj.WindMag);
+            end
+            
             uav_v = obj.GetVelocityV()';
             uav_vx = uav_v(1);
             uav_vy = uav_v(2);
@@ -90,6 +97,7 @@ classdef VFUAV
             s.uav_vx=uav_vx;
             s.uav_vy=uav_vy;
             s.bNormVFVectors=obj.bNormVFVectors;
+            s.line_theta = opt.line_theta;
             VFres = VF_obj.GetVF_at_XY(s);
             vf_angle_check = atan2(VFres.F(2),VFres.F(1));
             U = VFres.F(1);
@@ -103,7 +111,7 @@ classdef VFUAV
                     VFx = opt.oVFList{k}.VF;
                     avoid = VFx.GetVF_at_XY(s);
                     r_at_now = sqrt((uav_x-VFx.xc)^2+(uav_y-VFx.yc)^2);
-                    P = opt.DecayFunc(r_at_now);
+                    P = opt.DecayFunc(r_at_now,obs_radius);
                     Uavoid(k) = avoid.F(1) * P;
                     Vavoid(k) = avoid.F(2) * P;
                 end
@@ -113,9 +121,8 @@ classdef VFUAV
             vf_angle = atan2(V,U);
             
             %%
-            %fprintf('%4.3f (x=%4.2f,y=%4.2f) -> VF %4.2f T %4.2f V %4.2f\n',t,uav_x,uav_y,vf_angle,theta,uav_v);
-            
-            %update new position/heading/velocity
+            %fprintf('%4.3f (x=%4.2f,y=%4.2f) -> VF %4.2f T %4.2f V %4.2f\n',t,uav_x,uav_y,vf_angle,theta,uav_v);   
+            % new position/heading/velocity
             if(obj.bVFControlHeading || obj.bVFControlVelocity)
                 if(obj.bVFControlHeading)
                     theta=vf_angle;

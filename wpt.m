@@ -4,7 +4,7 @@ classdef wpt
         currentWP = 1
         WPx = []
         WPy = []
-        WPradius = 10
+        WPradius = 5
         active = true
         
         wpx = []
