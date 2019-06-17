@@ -9,6 +9,8 @@ classdef VFUAV
         bVFControlHeading=~true;
         bVFControlVelocity=true;
         bDubinsPathControl=true;
+        Wind = false;
+        WindMag = 0;
         m_dt;
         mID;
         bNormVFVectors=false;
@@ -73,8 +75,13 @@ classdef VFUAV
 
             theta = obj.GetHeading();
             pos = obj.GetPosition();
-            uav_x = pos(1);
+            uav_x = pos(1)
             uav_y = pos(2);
+            
+            if obj.Wind == true
+                uav_y = gust(uav_x,uav_y,0,obj.WindMag);
+            end
+            
             uav_v = obj.GetVelocityV()';
             uav_vx = uav_v(1);
             uav_vy = uav_v(2);
@@ -113,8 +120,7 @@ classdef VFUAV
             vf_angle = atan2(V,U);
             
             %%
-            %fprintf('%4.3f (x=%4.2f,y=%4.2f) -> VF %4.2f T %4.2f V %4.2f\n',t,uav_x,uav_y,vf_angle,theta,uav_v);
-            
+            %fprintf('%4.3f (x=%4.2f,y=%4.2f) -> VF %4.2f T %4.2f V %4.2f\n',t,uav_x,uav_y,vf_angle,theta,uav_v);   
             % new position/heading/velocity
             if(obj.bVFControlHeading || obj.bVFControlVelocity)
                 if(obj.bVFControlHeading)

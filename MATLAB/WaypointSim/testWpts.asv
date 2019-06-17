@@ -7,9 +7,9 @@ clear
 close all
 format compact
 
-   Waypoint = true;
+   Waypoint = false;
    GVF = true;
-   Wind = false
+   Wind = false;
 
    uav = UAV();
    uav.plotHeading = false;
@@ -103,7 +103,7 @@ if GVF == true
     uavYc = uavYStart;
     uavTheta = startHeading;
     dt = 0.005;
-    t_list=0:dt:40;
+    t_list=0:dt:30;
 
     %% Obstacle field initial conditions
     ovfXc = obstX;

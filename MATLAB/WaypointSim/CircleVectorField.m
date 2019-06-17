@@ -284,7 +284,7 @@ classdef CircleVectorField
                 end
                 xunit = Rc * cos(th) + x_c;
                 yunit = Rc * sin(th) + y_c;
-%                 h = plot(axis,xunit, yunit,'HandleVisibility','on','Color','k','LineWidth',2);
+                h = plot(axis,xunit, yunit,'HandleVisibility','on','Color','k','LineWidth',2);
              end
             
             RET.H = RET_H;

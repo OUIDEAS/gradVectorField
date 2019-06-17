@@ -9,6 +9,9 @@ classdef UAV
         plotUAV = false;
         plotUAVPath = true;
         plotFlightEnv = true;
+        Wind = false;
+        WindMag = 0;
+        
         
         colorMarker = 'k.';
         headingColor = 'r';
@@ -66,7 +69,6 @@ classdef UAV
                 theta = VF_heading;
             end
             
-           
             %Update States
             self.t=self.t+self.dt;
             self.heading = theta;
@@ -76,6 +78,10 @@ classdef UAV
             self.vy = self.v*sin(theta);
             self.x = self.x+self.vx*self.dt;
             self.y = self.y+self.vy*self.dt;
+            
+            if self.Wind == true
+                self.y = gust(self.x,self.y,0,self.WindMag);
+            end
             
             %Update flight envelope
             self = self.calcFlightEnv();
@@ -160,7 +166,6 @@ classdef UAV
         end
         function fig = pltUAV(self)
             
-            
             if self.plotUAV
             fig = plot(self.x,self.y,self.colorMarker);
             end
@@ -189,17 +194,12 @@ classdef UAV
                 
                 X2 = [self.x,self.flightEnvX(1)];
                 Y2 = [self.y,self.flightEnvY(1)];
-                
-                
+                    
                 plot(self.flightEnvX,self.flightEnvY,'r.',X1,Y1,'r',X2,Y2,'r');
             end
  
         end
-            
-            
-        
-        
-        
+               
     end
     
 end
