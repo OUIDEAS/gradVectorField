@@ -75,13 +75,16 @@ classdef UAV
             self.cmdHeading = VF_heading;
             
             self.vx = self.v*cos(theta);
-            self.vy = self.v*sin(theta)+0.25;
-            self.x = self.x+self.vx*self.dt;
-            self.y = self.y+self.vy*self.dt;
             
             if self.Wind == true
-                self.y = gust(self.x,self.y,0,self.WindMag);
+                self.vy = self.v*sin(theta)+self.WindMag;
+            else
+                self.vy = self.v*sin(theta);
             end
+            
+            self.x = self.x+self.vx*self.dt;
+            self.y = self.y+self.vy*self.dt;
+      
             
             %Update flight envelope
             self = self.calcFlightEnv();

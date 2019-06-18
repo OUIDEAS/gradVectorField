@@ -1,8 +1,8 @@
 function [list, optList] = makeOVF(xc,yc,r_in,initTheta,decayFunc,legendName,list,optList)
 %% Create vector field object using Goncalves method
 oVFa = GradientVectorField('Gradient',r_in);
-oVFa.G = 10;  % Convergence weight
-oVFa.H = 150;  % Circulation weight
+oVFa.G = 25;  % Convergence weight
+oVFa.H = 250;  % Circulation weight
 oVFa.L = 0;  % Time varying weight
 if initTheta < 0
     oVFa.H = oVFa.H;

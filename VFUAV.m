@@ -77,14 +77,17 @@ classdef VFUAV
             pos = obj.GetPosition();
             uav_x = pos(1);
             uav_y = pos(2);
-            
-            if obj.Wind == true
-                uav_y = gust(uav_x,uav_y,0,obj.WindMag);
-            end
+    
             
             uav_v = obj.GetVelocityV()';
             uav_vx = uav_v(1);
-            uav_vy = uav_v(2);
+            
+            if obj.Wind == true
+                uav_vy =uav_v(2)+obj.WindMag;
+            else
+                uav_vy = uav_v(2);
+            end
+            
             uav_v=sqrt(uav_v(1)^2+uav_v(2)^2);
             %uav_vx = uav_x+uav_vx*dt;
             %uav_vy = uav_y+uav_vy*dt;
