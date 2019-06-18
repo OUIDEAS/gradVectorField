@@ -43,11 +43,13 @@ classdef UAV
         headings = [];
         headingcmds = [];
         ts = [];
+        
+        activeWPs = [];
     end
     
     methods
         
-        function self =  update_pos(self,heading)     
+        function self =  update_pos(self,heading,WptObj)     
             VF_heading = heading;
             
             if self.useDubins == true
@@ -97,6 +99,7 @@ classdef UAV
             self.headings(end+1) = theta;
             self.headingcmds(end+1) = VF_heading;
             self.ts(end+1)=self.t;
+            self.activeWPs(end+1) = WptObj.currentWP;
         end
                  
         function self = calcFlightEnv(self)
@@ -161,7 +164,7 @@ classdef UAV
             self.headings = theta;
             self.headingcmds = theta;
             self.ts = 0;
-            
+            self.activeWPs = 1;
 %             self.turn_radius = self.v/self.turnrate;
             self.turn_radius = turnradius;
             
@@ -170,11 +173,24 @@ classdef UAV
         function fig = pltUAV(self)
             
             if self.plotUAV
-            fig = plot(self.x,self.y,self.colorMarker);
+                fig = plot(self.x,self.y,self.colorMarker);
             end
             
             if self.plotUAVPath
-                fig = plot(self.xs,self.ys,self.colorMarker,'linewidth',5);
+                %fig = plot(self.xs,self.ys,self.colorMarker,'linewidth',5);
+                lastWaypoint = 1;
+                color = self.colorMarker;
+                for i=1:length(self.xs)
+                    if(self.activeWPs(i) ~= lastWaypoint)
+                        if(strcmp(color,'g.'))
+                            color = self.colorMarker;
+                        else
+                            color = 'g.';
+                        end
+                        lastWaypoint = self.activeWPs(i);
+                    end
+                    fig = plot(self.xs(i),self.ys(i),color,'linewidth',5);
+                end
             end
             
             if self.plotHeading

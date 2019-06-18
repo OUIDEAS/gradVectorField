@@ -55,7 +55,7 @@ if Waypoint == true
     t=t_list(k);    
        wpMan = wpMan.getWPT(uav.x,uav.y);
        heading = atan2(wpMan.wpy-uav.y,wpMan.wpx-uav.x); 
-       uav = uav.update_pos(heading);
+       uav = uav.update_pos(heading, wpMan);
        uav.colorMarker = 'r.';
        wpMan.currentWP;         
        theta = linspace(0,2*pi);
@@ -141,7 +141,7 @@ if GVF == true
     xVUAV.WindMag = uav.WindMag;
     %% Create navigational vector fields
     G = 50;   % Convergence field
-    H = 10;   % Circulation field
+    H = 700;   % Circulation field
     L =  0;   % Time-varying field
     line_theta = deg2rad(90);
     cVFR = GradientVectorField('Straight',ovfRadius);

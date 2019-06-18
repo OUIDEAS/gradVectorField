@@ -4,49 +4,50 @@ classdef wpt
         currentWP = 1
         WPx = []
         WPy = []
-        WPradius = 5
+        WPradius = 25
         active = true
         
         wpx = []
         wpy = []
- 
+        lastRangeToWP = 99999999999;
     end
     
     methods
         
         function self = getWPT(self,x,y)
-            L = 2*self.WPradius + 10;
+            %L = 2*self.WPradius + 10;
             wptx = self.WPx(self.currentWP);
             wpty = self.WPy(self.currentWP);
             
             dx = wptx - x;                   % change in x between the Waypoint and the UAV
             dy = wpty - y;                   % change in y between the Waypoint and the UAV
             
-            alpha = atan2(dy, dx);              % angle between UAV and the current Waypoint measured from the x-axis
+            %alpha = atan2(dy, dx);              % angle between UAV and the current Waypoint measured from the x-axis
             
-            A = x + L * cos(alpha);          % current x-position of the Dummy Point
-            B = y + L * sin(alpha);          % current y-position of the Dummy point
+            %A = x + L * cos(alpha);          % current x-position of the Dummy Point
+            %B = y + L * sin(alpha);          % current y-position of the Dummy point
             
-            dA = wptx - A;                   % change in x between the Waypoint and the Dummy Point
-            dB = wpty - B;                   % change in y between the Waypoint and the Dummy Point
+            %dA = wptx - A;                   % change in x between the Waypoint and the Dummy Point
+            %dB = wpty - B;                   % change in y between the Waypoint and the Dummy Point
             
-            DUMMYtoWPT = sqrt(dA * dA + dB * dB); % calculate the distance between the Dummy Point and the Waypoint
-            UAVtoWPT =   sqrt(dx * dx + dy * dy);   % calculate the distance between the UAV and the Waypoint
+            %DUMMYtoWPT = sqrt(dA.^2 + dB.^2); % calculate the distance between the Dummy Point and the Waypoint
+            UAVtoWPT =   sqrt(dx.^2 + dy.^2);   % calculate the distance between the UAV and the Waypoint
             
-            if DUMMYtoWPT >= UAVtoWPT          % if the distance from the Dummy Point to the waypoint is greater than
+            
+            if (UAVtoWPT >=  self.lastRangeToWP && UAVtoWPT <= self.WPradius)
+                % if the distance from the Dummy Point to the waypoint is greater than
                 % the distance from the UAV to the Waypoint...
-                if UAVtoWPT <= self.WPradius   % ...and the distance from the UAV to the Waypoint is less than the specified radius
-                    if  self.currentWP ~= length(self.WPx)
-                        self.currentWP = self.currentWP + 1;  % change to the next Waypoint
-                        self.wpx = self.WPx(self.currentWP);
-                        self.wpy = self.WPy(self.currentWP);
-                    else
-                        self.active = false;
-                    end
-                end
+                % ...and the distance from the UAV to the Waypoint is less than the specified radius
+                if  self.currentWP ~= length(self.WPx)
+                    self.currentWP = self.currentWP + 1;  % change to the next Waypoint
+                    self.wpx = self.WPx(self.currentWP);
+                    self.wpy = self.WPy(self.currentWP);
+                else
+                    self.active = false;
+                end     
             end
+            self.lastRangeToWP = UAVtoWPT;
         end
-        
         
         
         function self = setup(self,WPs)
