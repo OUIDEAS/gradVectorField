@@ -16,6 +16,7 @@ uav.plotHeading = false;
 uav.plotCmdHeading = false;
 uav.Wind = Wind;
 uav.WindMag = 0.25;
+uav.WindRange = [-50 50];
 
 uavXStart = -350;
 uavYStart =  0;

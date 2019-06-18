@@ -11,7 +11,7 @@ classdef UAV
         plotFlightEnv = true;
         Wind = false;
         WindMag = 0;
-        
+        WindRange = [0 0];
         
         colorMarker = 'k.';
         headingColor = 'r';
@@ -212,14 +212,11 @@ classdef UAV
                 Y1 = [self.y,self.flightEnvY(end)];
                 
                 X2 = [self.x,self.flightEnvX(1)];
-                Y2 = [self.y,self.flightEnvY(1)];
-                    
+                Y2 = [self.y,self.flightEnvY(1)];             
                 plot(self.flightEnvX,self.flightEnvY,'r.',X1,Y1,'r',X2,Y2,'r');
+                
             end
- 
         end
-               
     end
-    
 end
 

@@ -11,6 +11,7 @@ classdef VFUAV
         bDubinsPathControl=true;
         Wind = false;
         WindMag = 0;
+        WindRange = [0 0];
         m_dt;
         mID;
         bNormVFVectors=false;
@@ -82,7 +83,8 @@ classdef VFUAV
             uav_v = obj.GetVelocityV()';
             uav_vx = uav_v(1);
             
-            if obj.Wind == true
+            if obj.Wind == true && uav_x <= obj.WindRange[1]
+                disp('in wind')
                 uav_vy =uav_v(2)+obj.WindMag;
             else
                 uav_vy = uav_v(2);
