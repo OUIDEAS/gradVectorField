@@ -75,7 +75,7 @@ classdef VFUAV
             obs_radius = opt.DecayRadius;
             theta = obj.GetHeading();
             pos = obj.GetPosition();
-            uav_x = pos(1)
+            uav_x = pos(1);
             uav_y = pos(2);
             
             if obj.Wind == true
@@ -116,9 +116,11 @@ classdef VFUAV
                     Vavoid(k) = avoid.F(2) * P;
                 end
                 U = VFres.F(1) + sum(Uavoid);
-                V = VFres.F(2) + sum(Vavoid);
+                V = VFres.F(2) + sum(Vavoid); 
             end
+            
             vf_angle = atan2(V,U);
+           
             
             %%
             %fprintf('%4.3f (x=%4.2f,y=%4.2f) -> VF %4.2f T %4.2f V %4.2f\n',t,uav_x,uav_y,vf_angle,theta,uav_v);   
@@ -184,6 +186,8 @@ classdef VFUAV
             H = scatter(ax,obj.mPositionHistory(1,:),obj.mPositionHistory(2,:),...
                 'MarkerFaceColor',color,'MarkerEdgeColor',color,...
                 'LineWidth',1);
-        end
+            
+            
+        end       
     end
 end

@@ -1,4 +1,4 @@
-classdef CircleVectorField
+classdef GradientVectorField
     properties
         G;
         H;
@@ -25,7 +25,7 @@ classdef CircleVectorField
     end
     
     methods
-        function obj = CircleVectorField(type,radius_in)
+        function obj = GradientVectorField(type,radius_in)
             if(strcmp(type,'Gradient'))
                 obj.bGradientVF=true;
             elseif(strcmp(type,'Lyapunov'))
@@ -120,25 +120,14 @@ classdef CircleVectorField
             if(isfield(opt,'UAV'))
                 VFUAV = opt.UAV;
             end
-            x_list = linspace(-limit,limit,NumPoints)+xct;%-limit:step:limit;
-            y_list = linspace(-limit,limit,NumPoints)+yct;
+            x_list = linspace(-limit,limit,NumPoints) + xct;%-limit:step:limit;
+            y_list = linspace(-limit,limit,NumPoints) + yct;
             k=1;
             Vect=[];
             for i=1:length(x_list)
                 x = x_list(i);
                 for ii=1:length(y_list)
                     y=y_list(ii);
-                    %alpha1 = x^2+y^2-r^2;
-                    %alpha2 = z;
-                    %Vconv{i,ii} = -G.*(alpha1(x,y,r).*[2.*x;2.*y;0]+alpha2(z).*[0;0;1]);
-                    %Vcirc{i,ii} = H.*[2.*y;-2.*x;0]; %page 81
-                    %VF_list{i,ii}=Vconv{i,ii}+Vcirc{i,ii};
-                    %  Vconv(x,y,z,xc,yc,r)
-                    %  Vcirc(x,y,xc,yc)
-                    %  Minv_a(x,y,xc,yc,vel,t)'
-                    %fprintf('(x,y) %4.2f,%4.2f\t (xc,yc) %4.2f,%4.2f\t (v,t) %4.2f,%4.2f\n'...
-                    %    ,x,y,xc,yc,vel,t);
-                    %VF_res = VF(x,y,0,r,G,H);
                     s.x=x;
                     s.y=y;
                     s.z=0;
@@ -162,10 +151,6 @@ classdef CircleVectorField
                     s.L=obj.L;
                     if(~isempty(VFUAV))
                         s.bNormVFVectors=VFUAV.bNormVFVectors;
-                    %s.Norm=false;
-                    
-                    
-                    %s.bUseVRel=false;
                         uav_vel = VFUAV.GetVelocityV();
                         s.uav_vx=uav_vel(1);
                         s.uav_vy=uav_vel(2);
@@ -175,11 +160,11 @@ classdef CircleVectorField
                         s.uav_vy=0;
                     end
                     if(obj.bGradientVF)
-                        VF_res = obj.VFtv(s);%VFtv(x,y,0,xc,yc,vel_t,0,r,G,H);
+                        VF_res = obj.VFtv(s);
                         VF_list_tv{i,ii}=VF_res.tv;
                         VF_list_circ{i,ii}=VF_res.circ;
                         VF_list_conv{i,ii}=VF_res.conv;
-                        VF_list{i,ii}=VF_res.F;%VF_res.F;
+                        VF_list{i,ii}=VF_res.F;
                     elseif(obj.bLyapunovVF)
                         VF_res = obj.VFLyapunov(s);
                         VF_list{i,ii} = VF_res;
@@ -195,9 +180,7 @@ classdef CircleVectorField
                     v(i,ii)=VF_list{i,ii}(2);
                     x_q(i,ii)=x;
                     y_q(i,ii)=y;
-                    %Vect = [Vect;VF_list{i,ii}(1) VF_list{i,ii}(2)];
-                    %k=k+1;
-                end
+                end  
             end
             if(obj.bGradientVF)
                 for i=1:length(x_list)
@@ -219,10 +202,7 @@ classdef CircleVectorField
                 normnorm = sqrt(u.^2+v.^2);
                 u=u./sqrt(u.^2+v.^2);
                 v=v./sqrt(u.^2+v.^2);
-%                 
-%                 u=u./normnorm;
-%                 v=v./normnorm;
-                %VectNorm = Vect./norm(Vect,2);
+                
                 if(obj.bGradientVF)
 %                     circ_norm = sqrt(ucirc.^2+vcirc.^2);
                     ucirc=ucirc./sqrt(ucirc.^2+vcirc.^2);
@@ -235,7 +215,12 @@ classdef CircleVectorField
 %                     utv_norm = sqrt(utv.^2+vtv.^2);
                     utv=utv./sqrt(utv.^2+vtv.^2);
                     vtv=vtv./sqrt(utv.^2+vtv.^2);
+                    
+                    utot = ucirc + uconv + utv;
+                    vtot = vcirc + vconv + vtv;
                 end
+                
+                
 %              else
 %                 un=u;
 %                 vn=v;
@@ -249,7 +234,7 @@ classdef CircleVectorField
                     nu(i,ii) = u(i,ii) .* P(i,ii);
                     nv(i,ii) = v(i,ii) .* P(i,ii);
                     Q(i,ii) = sqrt(u(i,ii)^2+v(ii,ii)^2);
-                    QP(i,ii) = sqrt(nu(i,ii)^2+nv(i,ii)^2);
+                    QP(i,ii) = sqrt(nu(i,ii)^2+nv(i,ii)^2);    
                 end
             end
             %only for plotting...
@@ -266,8 +251,14 @@ classdef CircleVectorField
                 end
             end
             
+            
             if opt.bPlotQuiverNorm == true
-                RET_H = quiver(axis,x_q,y_q,nu,nv,'Color',opt.Color);
+            
+                plot_nu = nu + u;
+                plot_nv = nv + v; 
+                
+%                 RET_H = quiver(axis,x_q,y_q,plot_nu,plot_nv,'Color',opt.Color);
+                RET_H = 0;
             else
                 RET_H = 0;
             end
@@ -282,23 +273,23 @@ classdef CircleVectorField
     %         quiver(x_q,y_q,utv,vtv,'Color',[0 0 0]);
             if(isfield(opt,'bShowCircle') && opt.bShowCircle)
                 th = 0:pi/50:2*pi;
-                x_c=obj.xc;
-                y_c=obj.yc;
+                x_c = obj.xc;
+                y_c =obj.yc;
                 Rc = obj.mCircleRadius;
                 if(isfield(opt,'bCustomCircleRadiusPlot'))
                     Rc =  opt.bCustomCircleRadiusPlot;
                 end
                 xunit = Rc * cos(th) + x_c;
                 yunit = Rc * sin(th) + y_c;
-                h = plot(axis,xunit, yunit,'HandleVisibility','on','Color','k','LineWidth',2);
+                h = plot(axis,xunit, yunit,'--','HandleVisibility','on','Color','k','LineWidth',2);
                 
                 Rc = obj.mCircleRadius*0.7;
                 xunit = Rc * cos(th) + x_c;
                 yunit = Rc * sin(th) + y_c;
-                h = plot(axis,xunit, yunit,'HandleVisibility','on','Color','r','LineWidth',2);
+                h = plot(axis,xunit, yunit,'HandleVisibility','on','Color','k','LineWidth',2);
              end
             
-            RET.H = RET_H;
+            RET.H = RET_H
             RET.QP = QP;
             RET.Q = Q;
             RET.X = x_q;
@@ -306,6 +297,9 @@ classdef CircleVectorField
             RET.P = P;
             RET.R = Rxx;
         end
+        
+        
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
