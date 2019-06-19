@@ -281,15 +281,15 @@ classdef GradientVectorField
                 end
                 xunit = Rc * cos(th) + x_c;
                 yunit = Rc * sin(th) + y_c;
-                h = plot(axis,xunit, yunit,'--','HandleVisibility','on','Color','k','LineWidth',2);
+%                 h = plot(axis,xunit, yunit,'--','HandleVisibility','on','Color','k','LineWidth',2);
                 
                 Rc = obj.mCircleRadius*0.7;
                 xunit = Rc * cos(th) + x_c;
                 yunit = Rc * sin(th) + y_c;
-                h = plot(axis,xunit, yunit,'HandleVisibility','on','Color','k','LineWidth',2);
+%                 h = plot(axis,xunit, yunit,'HandleVisibility','on','Color','k','LineWidth',2);
              end
             
-            RET.H = RET_H
+            RET.H = RET_H;
             RET.QP = QP;
             RET.Q = Q;
             RET.X = x_q;

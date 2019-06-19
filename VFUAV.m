@@ -10,8 +10,12 @@ classdef VFUAV
         bVFControlVelocity=true;
         bDubinsPathControl=true;
         Wind = false;
-        WindMag = 0;
-        WindRange = [0 0];
+        WindDisturbance = 0;
+        WindCenterX = 0;
+        WindCenterY = 0;
+        WindXRange  = 0;
+        WindYRange  = 0;
+        
         m_dt;
         mID;
         bNormVFVectors=false;
@@ -78,29 +82,32 @@ classdef VFUAV
             pos = obj.GetPosition();
             uav_x = pos(1);
             uav_y = pos(2);
-    
-            
             uav_v = obj.GetVelocityV()';
             uav_vx = uav_v(1);
+            uav_vy = uav_v(2);
             
-            if obj.Wind == true && uav_x <= obj.WindRange[1]
-                disp('in wind')
-                uav_vy =uav_v(2)+obj.WindMag;
-            else
-                uav_vy = uav_v(2);
+            % WIND.....................
+            x1 = obj.WindCenterX - obj.WindXRange;
+            x2 = obj.WindXRange + obj.WindCenterX;
+            y1 = obj.WindCenterY - obj.WindYRange;
+            y2 = obj.WindYRange + obj.WindCenterY;
+            xv = [x1, x2, x2, x1, x1];
+            yv = [y1, y1, y2, y2, y1];
+            if obj.Wind == true && inpolygon(uav_x, uav_y, xv, yv)
+                % IF IN WIND, ADD TO VELOCITY
+                uav_vy = uav_vy + obj.WindDisturbance;
+%                 scatter(uav_x, uav_y,'m')
             end
+            % END WIND.................
             
-            uav_v=sqrt(uav_v(1)^2+uav_v(2)^2);
-            %uav_vx = uav_x+uav_vx*dt;
-            %uav_vy = uav_y+uav_vy*dt;
-            
-            %should match getheading
-            %theta = atan2(uav_vy,uav_vx);
+            uav_v = sqrt(uav_vx^2+uav_vy^2);      
             s.t=t;
             s.x=uav_x;
             s.y=uav_y;
-            s.uav_vx=uav_vx;
-            s.uav_vy=uav_vy;
+
+            s.uav_vx = uav_vx;
+            s.uav_vy = uav_vy;
+          
             s.bNormVFVectors=obj.bNormVFVectors;
             s.line_theta = opt.line_theta;
             VFres = VF_obj.GetVF_at_XY(s);

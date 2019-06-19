@@ -1,5 +1,4 @@
 classdef UAV
-
     properties
         useDubins = true;
         
@@ -10,8 +9,11 @@ classdef UAV
         plotUAVPath = true;
         plotFlightEnv = true;
         Wind = false;
-        WindMag = 0;
-        WindRange = [0 0];
+        WindDisturbance = 0;
+        WindCenterX = 0;
+        WindCenterY = 0;
+        WindXRange  = 0;
+        WindYRange  = 0'
         
         colorMarker = 'k.';
         headingColor = 'r';
@@ -75,18 +77,27 @@ classdef UAV
             self.t=self.t+self.dt;
             self.heading = theta;
             self.cmdHeading = VF_heading;
-            
             self.vx = self.v*cos(theta);
-            
-            if self.Wind == true
-                self.vy = self.v*sin(theta)+self.WindMag;
-            else
-                self.vy = self.v*sin(theta);
-            end
-            
+            self.vy = self.v*sin(theta);
+                   
             self.x = self.x+self.vx*self.dt;
             self.y = self.y+self.vy*self.dt;
-      
+                    
+            % WIND.......................
+            x1 = self.WindCenterX - self.WindXRange;
+            x2 = self.WindXRange + self.WindCenterX;
+            y1 = self.WindCenterY - self.WindYRange;
+            y2 = self.WindYRange + self.WindCenterY;
+            xv = [x1, x2, x2, x1, x1];
+            yv = [y1, y1, y2, y2, y1];
+            if self.Wind == true && inpolygon(self.x, self.y, xv, yv)
+                % IF IN WIND, ADD TO VELOCITY
+%                 hold on
+                self.vy = self.v*sin(theta) + self.WindDisturbance;
+%                 scatter(self.x, self.y,'b')
+                plot(xv,yv,'k--','LineWidth',2)                                          
+            end
+            % END WIND...................
             
             %Update flight envelope
             self = self.calcFlightEnv();
@@ -103,9 +114,6 @@ classdef UAV
         end
                  
         function self = calcFlightEnv(self)
-            
-             
-%             turnrates = -self.turnrate:0.05:self.turnrate;
             
             turnrates = linspace(-self.turnrate,self.turnrate,5);
             
@@ -147,8 +155,7 @@ classdef UAV
                     
             end
         end
-            
-            
+                 
         function self = setup(self,x0,y0,v,theta,dt,turnradius)  
             theta = deg2rad(theta);
             self.x = x0;
@@ -204,8 +211,7 @@ classdef UAV
                 V = sin(self.cmdHeading);
                 quiver(self.x,self.y,U,V,self.cmdHeadingColor,'linewidth',2,'maxHeadSize',10); 
             end
-            
-            
+   
             if self.plotFlightEnv
                 
                 X1 = [self.x,self.flightEnvX(end)];

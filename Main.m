@@ -8,15 +8,20 @@ close all
 format compact
 
 Waypoint = true;
-GVF = true;
+GVF  = true;
 Wind = true;
+plot_total_field = false;
 
 uav = UAV();
 uav.plotHeading = false;
 uav.plotCmdHeading = false;
+
 uav.Wind = Wind;
-uav.WindMag = 0.25;
-uav.WindRange = [-50 50];
+uav.WindDisturbance = 0.5;
+uav.WindCenterX = 0;
+uav.WindCenterY = 0;
+uav.WindXRange = 50;
+uav.WindYRange = 300;
 
 uavXStart = -350;
 uavYStart =  0;
@@ -25,7 +30,7 @@ uavYEnd   =   uavYStart;
 uavVvelocity = 20;
 startHeading = 0;
 turnrate = 0.40;
-time = 50;
+time = 100;
 dt = 0.05;
 t_list=0:dt:time;
 turn_radius = uavVvelocity / turnrate;
@@ -40,7 +45,6 @@ obstX = 0;
 obstY = 0;
 
 optPath = genOptPath(uav,obstRadius,obstX,obstY,25);
-%    optPath = [0 50; 200 50]
 
 wpMan = wpt();
 wpMan = wpMan.setup(optPath);
@@ -48,10 +52,7 @@ wpMan.WPx(end+1) = uavXEnd;
 wpMan.WPy(end+1) = uavYEnd;
    
 %   WAYPOINT SIM
-
 if Waypoint == true
-
-%    while wpMan.currentWP <= length(wpMan.WPx) && wpMan.active
     for k=1:length(t_list)
     t=t_list(k);    
        wpMan = wpMan.getWPT(uav.x,uav.y);
@@ -61,15 +62,19 @@ if Waypoint == true
        wpMan.currentWP;         
        theta = linspace(0,2*pi);
        r = obstRadius;% * 0.2;
-       x = r*cos(theta)+obstX;
-       y = r*sin(theta)+obstY;   
+       r_decay = r * 0.7;
+       x_decay = r*cos(theta)+obstX;
+       y_decay = r*sin(theta)+obstY;
+       x = r_decay*cos(theta)+obstX;
+       y = r_decay*sin(theta)+obstY;   
     end
     
     hold on    
     uav.pltUAV();    
-    wpMan.pltWpts();       
-    plot(x,y,'--')
-
+    wpMan.pltWpts();     
+    plot(x_decay,y_decay,'c--')
+    plot(x,y,'k')
+   
     scatter(uavXStart, uavYStart, 200,'d','filled','b')
     scatter(uavXEnd, uavYEnd, 400,'c','p','filled')
 
@@ -77,16 +82,17 @@ if Waypoint == true
     plot([wpMan.WPx,wpMan.WPx],[wpMan.WPy,wpMan.WPy],'k')
     plot(wpMan.WPx,wpMan.WPy,'r*');
 
-    h = zeros(6, 1);
+    h = zeros(8, 1);
     h(1) = scatter(NaN,NaN,'d','MarkerFaceColor','b','MarkerEdgeColor','b');
-    h(2) = plot(NaN,NaN,'b','LineStyle','--');
-    h(3) = plot(NaN,NaN,'k');
+    h(2) = plot(NaN,NaN,'k');
+    h(3) = plot(NaN,NaN,'c','LineStyle','--');
     h(4) = plot(NaN,NaN,'r*');
     h(5) = scatter(NaN,NaN,'p','MarkerFaceColor','c','MarkerEdgeColor','c');
     h(6) = plot(NaN,NaN,'r.');
+    h(7) = plot(NaN,NaN,'k--');
         
     if GVF ~= true
-       legend(h,'Mission Start','Obstacle','Line Segments','Waypoints','Mission End','Waypoint UAV Path');
+%        legend(h,'Mission Start','Obstacle','Line Segments','Waypoints','Mission End','Waypoint UAV Path');
        legend show
        xlabel('East(m)')
        ylabel('North(m)')
@@ -138,8 +144,14 @@ if GVF == true
     xVUAV.bDubinsPathControl = true;
     xVUAV.mTurnrate = turnrate;
     xVUAV.bNormVFVectors=~true;
-    xVUAV.Wind = uav.Wind;
-    xVUAV.WindMag = uav.WindMag;
+    
+    xVUAV.Wind    = uav.Wind;
+    xVUAV.WindDisturbance = uav.WindDisturbance;
+    xVUAV.WindCenterX = uav.WindCenterX;
+    xVUAV.WindCenterY = uav.WindCenterY;
+    xVUAV.WindXRange  = uav.WindXRange;
+    xVUAV.WindYRange   =  uav.WindYRange;
+    
     %% Create navigational vector fields
     G = 50;   % Convergence field
     H = 700;   % Circulation field
@@ -161,10 +173,10 @@ if GVF == true
     ovfOpt = {};
 
     [avoidVF, ovfOpt] = makeOVF(ovfXc, ovfYc, ovfRadius, ovfTheta,...
-        ovfDF, 'Obstacle 1', avoidVF, ovfOpt)
+        ovfDF, 'Obstacle 1', avoidVF, ovfOpt);
 
     opt.bCustomRange = abs(uavXStart)+10; 
-    opt.bShowCircle=~true;
+    opt.bShowCircle=~false;
     opt.bPlotQuiverNorm=true;
     opt.DecayFunc = @VTanh;
     opt.CustomNumberOfPoints=50;
@@ -190,7 +202,7 @@ if GVF == true
             if(bShowVectorField)
                 clear opt;
                 opt.bCustomRange = abs(uavXStart)+10; 
-                opt.bShowCircle=~true;
+                opt.bShowCircle=~false;
                 opt.bPlotQuiverNorm=true;
                 opt.DecayFunc = @VTanh;
                 opt.CustomNumberOfPoints=50;
@@ -235,7 +247,7 @@ if GVF == true
 
     for ii=1:length(avoidVF)
         ovfOpt{ii}.bPlotQuiverNorm = true;
-        ovfOpt{ii}.bShowCircle=true;
+        ovfOpt{ii}.bShowCircle=false;
         ovfOpt{ii}.bCustomRange = avoidVF{ii}.plotrange;
         ovfOpt{ii}.bCustomCenter = avoidVF{ii}.plotcenter;
         ovfOpt{ii}.bCustomCircleRadiusPlot = avoidVF{ii}.plotradius;
@@ -247,22 +259,16 @@ if GVF == true
         plot_h_avoid = RET_temp.H;
     end
     
-    h(7) = scatter(UAVList{i}.mPositionHistory(1,:),UAVList{i}.mPositionHistory(2,:), '.');
+    h(8) = scatter(UAVList{i}.mPositionHistory(1,:),UAVList{i}.mPositionHistory(2,:), 'b.');
     axis equal;
     xlim([uavXStart -uavXStart]);
     ylim([uavXStart -uavXStart]);
     set(gca, 'FontSize', 18)
     grid on;
     xlabel('X-Position [m]', 'FontSize', 14);
-    ylabel('Y-Position [m]', 'FontSize', 14);
-    
-    if Waypoint == true
-        legend(h,'Mission Start','Obstacle','Line Segments','Waypoints','Mission End','Waypoint UAV Path','GVF UAV Path','GVF Guidance Field');
-    else
-        legend('Mission Start','Obstacle','Line Segments','Waypoints','Mission End','GVF UAV Path');
-    end
-       
+    ylabel('Y-Position [m]', 'FontSize', 14);      
 end 
+if plot_total_field == true
         % PLOTTING TOTAL FIELD...
         x_list = linspace(uavXStart,-uavXStart,30);
         y_list = linspace(uavXStart,-uavXStart,30);
@@ -321,11 +327,13 @@ end
                 normU(i,ii) = U(i,ii)/magUV(i,ii);
                 normV(i,ii) = V(i,ii)/magUV(i,ii);
             end  
-        end
-        
-%         h(8) = quiver(X,Y,AvoidU,AvoidV,'Color','r');
-        h(8) = quiver(X,Y,normU,normV,'Color','b');
-        legend(h,'Mission Start','Obstacle','Line Segments','Waypoints','Mission End','Waypoint UAV Path','GVF UAV Path','GVF Guidance Field');
+        end     
+        h(9) = quiver(X,Y,normU,normV,'Color','b');
+        leg = legend(h,'Mission Start','Obstacle','Decay Radius','Waypoints','Mission End','Waypoint UAV Path','Wind Region','GVF UAV Path','GVF Guidance Field');
+        else
+            leg = legend(h,'Mission Start','Obstacle','Decay Radius','Waypoints','Mission End','Waypoint UAV Path','Wind Region','GVF UAV Path');
+end
+set(leg, 'Location', 'Best')
         
     %% Decay functions go here
 function G = VTanh(rrin,obs_radius)
