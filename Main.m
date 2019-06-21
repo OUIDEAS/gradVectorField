@@ -12,7 +12,7 @@ GVF  = true;
 Wind = true;
 plot_total_field = false;
 
-uav = UAV();
+uav = WPUAV();
 uav.plotHeading = false;
 uav.plotCmdHeading = false;
 
@@ -30,7 +30,7 @@ uavYEnd   =   uavYStart;
 uavVvelocity = 20;
 startHeading = 0;
 turnrate = 0.40;
-time = 100;
+time = 40;
 dt = 0.05;
 t_list=0:dt:time;
 turn_radius = uavVvelocity / turnrate;
@@ -54,46 +54,52 @@ wpMan.WPy(end+1) = uavYEnd;
 %   WAYPOINT SIM
 if Waypoint == true
     for k=1:length(t_list)
-    t=t_list(k);    
-       wpMan = wpMan.getWPT(uav.x,uav.y);
-       heading = atan2(wpMan.wpy-uav.y,wpMan.wpx-uav.x); 
-       uav = uav.update_pos(heading, wpMan);
-       uav.colorMarker = 'r.';
-       wpMan.currentWP;         
-       theta = linspace(0,2*pi);
-       r = obstRadius;% * 0.2;
-       r_decay = r * 0.7;
-       x_decay = r*cos(theta)+obstX;
-       y_decay = r*sin(theta)+obstY;
-       x = r_decay*cos(theta)+obstX;
-       y = r_decay*sin(theta)+obstY;   
+        t=t_list(k);    
+        wpMan = wpMan.getWPT(uav.x,uav.y);
+        heading = atan2(wpMan.wpy-uav.y,wpMan.wpx-uav.x); 
+        uav = uav.update_pos(heading, wpMan);
+        uav.colorMarker = 'r:';
+        wpMan.currentWP;         
+        theta = linspace(0,2*pi);
+        r = obstRadius;% * 0.2;
+        r_decay = r * 0.7;
+        x_decay = r*cos(theta)+obstX;
+        y_decay = r*sin(theta)+obstY;
+        x = r_decay*cos(theta)+obstX;
+        y = r_decay*sin(theta)+obstY;   
     end
     
     hold on    
     uav.pltUAV();    
-    wpMan.pltWpts();     
-    plot(x_decay,y_decay,'c--')
-    plot(x,y,'k')
+    wpMan.pltWpts();    
+    %decay circle
+    %plot(x_decay,y_decay,'c--')
+    %obstacle circle
+    plot(x,y,'k','LineWidth',2);
    
-    scatter(uavXStart, uavYStart, 200,'d','filled','b')
-    scatter(uavXEnd, uavYEnd, 400,'c','p','filled')
+    %scatter(uavXStart, uavYStart, 200,'d','filled','b')
+    %scatter(uavXEnd, uavYEnd, 400,'c','p','filled')
 
-    plot([uavXStart,wpMan.WPx(1)],[uavYStart 0],'k')
-    plot([wpMan.WPx,wpMan.WPx],[wpMan.WPy,wpMan.WPy],'k')
-    plot(wpMan.WPx,wpMan.WPy,'r*');
+    %??? start of path
+    %plot([uavXStart,wpMan.WPx(1)],[uavYStart 0],'k')
+    % direct WP path
+%     plot([wpMan.WPx,wpMan.WPx],[wpMan.WPy,wpMan.WPy],'k') 
+    %waypoint centers
+    plot(wpMan.WPx,wpMan.WPy,'MarkerSize',10,'Marker','*','LineWidth',2,'LineStyle','none',...
+    'Color',[0 0 0]);
 
     h = zeros(8, 1);
-    h(1) = scatter(NaN,NaN,'d','MarkerFaceColor','b','MarkerEdgeColor','b');
-    h(2) = plot(NaN,NaN,'k');
-    h(3) = plot(NaN,NaN,'c','LineStyle','--');
-    h(4) = plot(NaN,NaN,'r*');
-    h(5) = scatter(NaN,NaN,'p','MarkerFaceColor','c','MarkerEdgeColor','c');
-    h(6) = plot(NaN,NaN,'r.');
-    h(7) = plot(NaN,NaN,'k--');
+    %h(1) = scatter(NaN,NaN,'d','MarkerFaceColor','b','MarkerEdgeColor','b');
+    %h(2) = plot(NaN,NaN,'k');
+    %h(3) = plot(NaN,NaN,'c','LineStyle','--');
+    %h(4) = plot(NaN,NaN,'r*');
+    %h(5) = scatter(NaN,NaN,'p','MarkerFaceColor','c','MarkerEdgeColor','c');
+    %h(6) = plot(NaN,NaN,'r.');
+    %h(7) = plot(NaN,NaN,'k--');
         
     if GVF ~= true
 %        legend(h,'Mission Start','Obstacle','Line Segments','Waypoints','Mission End','Waypoint UAV Path');
-       legend show
+       %legend show
        xlabel('East(m)')
        ylabel('North(m)')
        axis equal
@@ -258,7 +264,7 @@ if GVF == true
         RET_temp = avoidVF{ii}.VF.PlotFieldAroundRadius(gca,ovfOpt{ii});
         plot_h_avoid = RET_temp.H;
     end
-    
+    %VF Path
     h(8) = scatter(UAVList{i}.mPositionHistory(1,:),UAVList{i}.mPositionHistory(2,:), 'b.');
     axis equal;
     xlim([uavXStart -uavXStart]);
@@ -268,6 +274,7 @@ if GVF == true
     xlabel('X-Position [m]', 'FontSize', 14);
     ylabel('Y-Position [m]', 'FontSize', 14);      
 end 
+plot_total_field=true;
 if plot_total_field == true
         % PLOTTING TOTAL FIELD...
         x_list = linspace(uavXStart,-uavXStart,30);
@@ -328,13 +335,13 @@ if plot_total_field == true
                 normV(i,ii) = V(i,ii)/magUV(i,ii);
             end  
         end     
-        h(9) = quiver(X,Y,normU,normV,'Color','b');
-        leg = legend(h,'Mission Start','Obstacle','Decay Radius','Waypoints','Mission End','Waypoint UAV Path','Wind Region','GVF UAV Path','GVF Guidance Field');
-        else
-            leg = legend(h,'Mission Start','Obstacle','Decay Radius','Waypoints','Mission End','Waypoint UAV Path','Wind Region','GVF UAV Path');
+        h(9) = quiver(X,Y,normU,normV,0.5,'Color','b');
+        %leg = legend(h,'Mission Start','Obstacle','Decay Radius','Waypoints','Mission End','Waypoint UAV Path','Wind Region','GVF UAV Path','GVF Guidance Field');
+else
+    %leg = legend(h,'Mission Start','Obstacle','Decay Radius','Waypoints','Mission End','Waypoint UAV Path','Wind Region','GVF UAV Path');
 end
-set(leg, 'Location', 'Best')
-        
+%set(leg, 'Location', 'Best')
+set(gca,'YLim',[-150 200]);  
     %% Decay functions go here
 function G = VTanh(rrin,obs_radius)
     r_non = rrin/obs_radius;

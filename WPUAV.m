@@ -1,4 +1,4 @@
-classdef UAV
+classdef WPUAV
     properties
         useDubins = true;
         
@@ -120,21 +120,21 @@ classdef UAV
             for j=1:length(turnrates)
                 
                 if turnrates(j) ~=0
-                P   = [self.x;self.y;0];
-                x_b = (self.v*sin(self.tLookAhead*turnrates(j))/turnrates(j));         %ICx in the body frame
-                y_b = (self.v/turnrates(j))*(1-cos(self.tLookAhead*turnrates(j)));     %ICy in the body frame
-                q   = sqrt(x_b^2+y_b^2);                                               %Length of xb,yb
-                phi = atan2(y_b,x_b);
-                q_b = [q*cos(phi);q*sin(phi);0];
-                
-                R0_b = [cos(self.heading)     -sin(self.heading)      0;
-                        sin(self.heading)      cos(self.heading)      0;
-                        0                           0               1];
-                
-                    
-                Q0 = P + R0_b*q_b;
-                self.flightEnvX(j) = Q0(1);
-                self.flightEnvY(j) = Q0(2);
+                    P   = [self.x;self.y;0];
+                    x_b = (self.v*sin(self.tLookAhead*turnrates(j))/turnrates(j));         %ICx in the body frame
+                    y_b = (self.v/turnrates(j))*(1-cos(self.tLookAhead*turnrates(j)));     %ICy in the body frame
+                    q   = sqrt(x_b^2+y_b^2);                                               %Length of xb,yb
+                    phi = atan2(y_b,x_b);
+                    q_b = [q*cos(phi);q*sin(phi);0];
+
+                    R0_b = [cos(self.heading)     -sin(self.heading)      0;
+                            sin(self.heading)      cos(self.heading)      0;
+                            0                           0               1];
+
+
+                    Q0 = P + R0_b*q_b;
+                    self.flightEnvX(j) = Q0(1);
+                    self.flightEnvY(j) = Q0(2);
                 
                 else
                     P   = [self.x;self.y;0];
@@ -184,20 +184,23 @@ classdef UAV
             end
             
             if self.plotUAVPath
-                %fig = plot(self.xs,self.ys,self.colorMarker,'linewidth',5);
-                lastWaypoint = 1;
-                color = self.colorMarker;
-                for i=1:length(self.xs)
-                    if(self.activeWPs(i) ~= lastWaypoint)
-                        if(strcmp(color,'g.'))
-                            color = self.colorMarker;
-                        else
-                            color = 'g.';
-                        end
-                        lastWaypoint = self.activeWPs(i);
-                    end
-                    fig = plot(self.xs(i),self.ys(i),color,'linewidth',5);
-                end
+%                 fig = plot(self.xs,self.ys,self.colorMarker,'linewidth',5);
+                crange = (1:10:length(self.xs));
+                fig = plot(self.xs(crange),self.ys(crange),self.colorMarker,'linewidth',5);
+
+%                 lastWaypoint = 1;
+%                 color = self.colorMarker;
+%                 for i=1:length(self.xs)
+%                     if(self.activeWPs(i) ~= lastWaypoint)
+%                         if(strcmp(color,'g.'))
+%                             color = self.colorMarker;
+%                         else
+%                             color = 'g.';
+%                         end
+%                         lastWaypoint = self.activeWPs(i);
+%                     end
+%                     fig = plot(self.xs(i),self.ys(i),color,'linewidth',5);
+%                 end
             end
             
             if self.plotHeading

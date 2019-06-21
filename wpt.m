@@ -66,7 +66,7 @@ classdef wpt
             cys = self.WPradius*sin(theta);
             for i=1:length(self.WPx)
 
-                plot(cxs+self.WPx(i),cys+self.WPy(i),'m');
+                plot(cxs+self.WPx(i),cys+self.WPy(i),'Color',[0.800000011920929 0.800000011920929 0.800000011920929],'LineWidth',2);
                 
             end          
         end
