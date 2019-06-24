@@ -143,7 +143,7 @@ if GVF == true
     uo.vx = uav_v*cos(uavTheta);
     uo.vy = uav_v*sin(uavTheta);
     uo.heading = uavTheta;
-    xVUAV = xVUAV.SetVelocityAndHeading(uo); 
+    xVUAV = xVUAV.SetVelocityAndHeading(uo,uav_v); 
     clear uo;
     xVUAV.bVFControlVelocity=~true;
     xVUAV.bVFControlHeading=~true;

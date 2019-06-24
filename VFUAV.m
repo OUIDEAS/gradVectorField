@@ -15,7 +15,7 @@ classdef VFUAV
         WindCenterY = 0;
         WindXRange  = 0;
         WindYRange  = 0;
-        
+        mDesiredVelocity = 0;
         m_dt;
         mID;
         bNormVFVectors=false;
@@ -62,7 +62,7 @@ classdef VFUAV
             obj.mHeadingHistory=[obj.mHeadingHistory;newHeading];
         end
 
-        function obj=SetVelocityAndHeading(obj,u)
+        function obj=SetVelocityAndHeading(obj,u,Velocity)
             newV = [u.vx;u.vy];
             newT = u.heading;
 %             uav_vx = newV*cos(newT);
@@ -70,6 +70,7 @@ classdef VFUAV
 %             newVV = [uav_vx;uav_vy];
             obj = obj.SetHeading(newT);
             obj.mVelocityVHistory = [obj.mVelocityVHistory,newV];
+            obj.mDesiredVelocity = Velocity;
         end
         function vel = GetMaxTurnrate(obj)
             vel = obj.mTurnrate;
@@ -85,22 +86,11 @@ classdef VFUAV
             uav_v = obj.GetVelocityV()';
             uav_vx = uav_v(1);
             uav_vy = uav_v(2);
+           
+            %disable this because wind adds but never removes velocity
+            uav_v = obj.mDesiredVelocity;
+            %uav_v = sqrt(uav_vx^2+uav_vy^2); 
             
-            % WIND.....................
-            x1 = obj.WindCenterX - obj.WindXRange;
-            x2 = obj.WindXRange + obj.WindCenterX;
-            y1 = obj.WindCenterY - obj.WindYRange;
-            y2 = obj.WindYRange + obj.WindCenterY;
-            xv = [x1, x2, x2, x1, x1];
-            yv = [y1, y1, y2, y2, y1];
-            if obj.Wind == true && inpolygon(uav_x, uav_y, xv, yv)
-                % IF IN WIND, ADD TO VELOCITY
-                uav_vy = uav_vy + obj.WindDisturbance;
-%                 scatter(uav_x, uav_y,'m')
-            end
-            % END WIND.................
-            
-            uav_v = sqrt(uav_vx^2+uav_vy^2);      
             s.t=t;
             s.x=uav_x;
             s.y=uav_y;
@@ -177,15 +167,36 @@ classdef VFUAV
             if(~obj.bVFControlHeading && ~obj.bVFControlVelocity && ~obj.bDubinsPathControl) 
                 error('must have uav control type');
             end
-            uav_vx = uav_v*cos(theta);
-            uav_vy = uav_v*sin(theta);
+            % WIND.......................
+            x1 = obj.WindCenterX - obj.WindXRange;
+            x2 = obj.WindXRange + obj.WindCenterX;
+            y1 = obj.WindCenterY - obj.WindYRange;
+            y2 = obj.WindYRange + obj.WindCenterY;
+            xfield = [x1, x2, x2, x1, x1];
+            yfield = [y1, y1, y2, y2, y1];
+            if obj.Wind == true && inpolygon(uav_x, uav_y, xfield, yfield)
+                % IF IN WIND, ADD TO VELOCITY
+%                 hold on
+                uav_vy = uav_v*sin(theta) + obj.WindDisturbance;
+                uav_vx = uav_v*cos(theta);% + obj.WindDisturbance;             
+                
+%                 scatter(self.x, self.y,'b')
+                plot(xfield,yfield,'g--','LineWidth',2);
+                scatter(uav_x,uav_y);
+            else
+                uav_vy = uav_v*sin(theta);
+                uav_vx = uav_v*cos(theta);
+            end
+            % END WIND...................
+            
+            %uav_vy = uav_v*sin(theta);
             uav_x = uav_x+uav_vx*dt;
             uav_y = uav_y+uav_vy*dt;
             obj = obj.SetPosition([uav_x;uav_y]);
             uo.vx = uav_vx;
             uo.vy = uav_vy;
             uo.heading = theta;
-            obj = obj.SetVelocityAndHeading(uo);
+            obj = obj.SetVelocityAndHeading(uo,uav_v);
         end
         function err = ComputePositionError(obj,cVF)
             pos = obj.GetPosition();
