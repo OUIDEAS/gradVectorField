@@ -22,6 +22,7 @@ classdef GradientVectorField
         bStraightVF = false;
         radFunc=[];
         mLegendName;
+        line_theta;
     end
     
     methods
@@ -65,7 +66,7 @@ classdef GradientVectorField
             elseif(obj.bLyapunovVF)
                 V.F = obj.VFLyapunov(s);
             elseif(obj.bStraightVF)
-                s.line_theta = si.line_theta;
+                obj.line_theta = obj.line_theta;
                 V = obj.VFStraight(s);
             else
                 error('no VF type');
@@ -253,12 +254,13 @@ classdef GradientVectorField
             
             
             if opt.bPlotQuiverNorm == true
-            
-                plot_nu = nu + u;
-                plot_nv = nv + v; 
-                
+%             
+%                 plot_nu = nu;
+%                 plot_nv = nv; 
+                RET_H = quiver(axis,x_q,y_q,nu,nv,'Color',opt.Color);
+
 %                 RET_H = quiver(axis,x_q,y_q,plot_nu,plot_nv,'Color',opt.Color);
-                RET_H = 0;
+%                 RET_H = 0;
             else
                 RET_H = 0;
             end
@@ -305,27 +307,28 @@ classdef GradientVectorField
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function V = VFStraight(obj,s)
-            a = 1*cos(s.line_theta);
-            b = 1*sin(s.line_theta);
-            a1 = a*(s.x-s.xc)+b*(s.y-s.yc);
-            ga1 = [a;b;0];
-            a2 = s.z;
-            ga2 = [0;0;1];
-            Vcnv = -s.G.*(a1*ga1+a2*ga2);
-            Vcrc = s.H*cross(ga1,ga2);
-            TV = [0;0;0];
-
-            if(s.bNormVFVectors)
-                Vcnv = Vcnv/norm(Vcnv);
-                if(norm(Vcrc) ~=0)
-                    Vcrc = Vcrc/norm(Vcrc);
+                    a = 1*cos(obj.line_theta);
+                    b = 1*sin(obj.line_theta);
+                    a1 = a*(s.x-s.xc)+b*(s.y-s.yc);
+                    ga1 = [a;b;0];
+                    a2 = s.z;
+                    ga2 = [0;0;1];
+                    Vcnv = -s.G * (a1*ga1+a2*ga2);
+                    Vcrc = s.H * cross(ga1,ga2);
+                    TV = [0;0;0];
+% 
+%                     if(s.bNormVFVectors)
+%                         Vcnv = Vcnv/norm(Vcnv);
+%                         if(norm(Vcrc) ~=0)
+%                             Vcrc = Vcrc/norm(Vcrc);
+%                         end
+%                     end
+                    
+                    V.conv = Vcnv;
+                    V.circ = Vcrc;
+                    V.tv = TV;
+                    V.F=Vcnv+Vcrc+TV;
                 end
-            end
-            V.conv = Vcnv;
-            V.circ = Vcrc;
-            V.tv = TV;
-            V.F=Vcnv+Vcrc+TV;
-        end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -352,8 +355,11 @@ classdef GradientVectorField
         function V = Vconv_c(o,s) 
             V1 = -o.alpha1_circ(s).*[2.*(s.x-s.xc);2.*(s.y-s.yc);0]./s.r;%^2;
             V2 = o.alpha2_circ(s).*[0;0;1];
-%             V = V1+V2;
-            V = sqrt(V1.^2+V2.^2);
+            V = -0.5*(V1+V2);
+%             V = -0.5*sqrt(V1.^2+V2.^2);
+%             V =  -sqrt(o.alpha1_circ(s).^2 + o.alpha2_circ(s).^2);
+              
+        
         end
         function V = Vcirc_c(o,s) 
             V = [2.*(s.y-s.yc);-2.*(s.x-s.xc);0];

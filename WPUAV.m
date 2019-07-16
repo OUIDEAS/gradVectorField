@@ -79,10 +79,7 @@ classdef WPUAV
             self.cmdHeading = VF_heading;
             self.vx = self.v*cos(theta);
             self.vy = self.v*sin(theta);
-                   
-            self.x = self.x+self.vx*self.dt;
-            self.y = self.y+self.vy*self.dt;
-                    
+                        
             % WIND.......................
             x1 = self.WindCenterX - self.WindXRange;
             x2 = self.WindXRange + self.WindCenterX;
@@ -99,6 +96,9 @@ classdef WPUAV
             end
             % END WIND...................
             
+            self.x = self.x + self.vx*self.dt;
+            self.y = self.y + self.vy*self.dt;
+                    
             %Update flight envelope
             self = self.calcFlightEnv();
                 

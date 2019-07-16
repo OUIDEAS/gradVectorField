@@ -98,19 +98,19 @@ classdef VFUAV
             s.uav_vx = uav_vx;
             s.uav_vy = uav_vy;
           
-            s.bNormVFVectors=obj.bNormVFVectors;
-            s.line_theta = opt.line_theta;
+            s.bNormVFVectors = obj.bNormVFVectors;
+%             s.line_theta = opt.line_theta;
             VFres = VF_obj.GetVF_at_XY(s);
             vf_angle_check = atan2(VFres.F(2),VFres.F(1));
             U = VFres.F(1);
             V = VFres.F(2);
             if(~isempty(opt.oVFList))
-                %s.DecayFunc = opt.DecayFunc;
+                s.DecayFunc = opt.DecayFunc;
                 Uavoid=ones(1,length(opt.oVFList));
                 Vavoid=ones(1,length(opt.oVFList));
 
                 for k=1:length(opt.oVFList)
-                    VFx = opt.oVFList{k}.VF;
+                    VFx = opt.oVFList(k);
                     avoid = VFx.GetVF_at_XY(s);
                     r_at_now = sqrt((uav_x-VFx.xc)^2+(uav_y-VFx.yc)^2);
                     P = opt.DecayFunc(r_at_now,obs_radius);
@@ -167,6 +167,10 @@ classdef VFUAV
             if(~obj.bVFControlHeading && ~obj.bVFControlVelocity && ~obj.bDubinsPathControl) 
                 error('must have uav control type');
             end
+            
+            uav_vx = uav_v*cos(theta);
+            uav_vy = uav_v*sin(theta);
+            
             % WIND.......................
             x1 = obj.WindCenterX - obj.WindXRange;
             x2 = obj.WindXRange + obj.WindCenterX;
@@ -176,22 +180,16 @@ classdef VFUAV
             yfield = [y1, y1, y2, y2, y1];
             if obj.Wind == true && inpolygon(uav_x, uav_y, xfield, yfield)
                 % IF IN WIND, ADD TO VELOCITY
-%                 hold on
+                hold on
                 uav_vy = uav_v*sin(theta) + obj.WindDisturbance;
-                uav_vx = uav_v*cos(theta);% + obj.WindDisturbance;             
-                
-%                 scatter(self.x, self.y,'b')
                 plot(xfield,yfield,'g--','LineWidth',2);
                 scatter(uav_x,uav_y);
-            else
-                uav_vy = uav_v*sin(theta);
-                uav_vx = uav_v*cos(theta);
             end
             % END WIND...................
             
-            %uav_vy = uav_v*sin(theta);
-            uav_x = uav_x+uav_vx*dt;
-            uav_y = uav_y+uav_vy*dt;
+            uav_x = uav_x + uav_vx*dt;
+            uav_y = uav_y + uav_vy*dt;
+            
             obj = obj.SetPosition([uav_x;uav_y]);
             uo.vx = uav_vx;
             uo.vy = uav_vy;
