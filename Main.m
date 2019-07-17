@@ -11,14 +11,14 @@ figure; hold all
 Waypoint = true;
 GVF  = true;
 Wind = true;
-plot_total_field = true;
+plot_total_field = false;
 
 uav = WPUAV();
 uav.plotHeading = false;
 uav.plotCmdHeading = false;
 
 uav.Wind = Wind;
-uav.WindDisturbance = 0.5;
+uav.WindDisturbance = 0.25;
 uav.WindCenterX = 0;
 uav.WindCenterY = 0;
 uav.WindXRange = 75;
@@ -70,17 +70,42 @@ if Waypoint == true
     wpMan.pltWpts();
     
     % PLOT CIRCLES
-    circle(0+obstX,0+obstY,r);
-    circle(0+obstX,0+obstY,r_decay);
+    circle(0+obstX,0+obstY,r,'k--');
+    circle(0+obstX,0+obstY,r_decay,'k');
     
-    %PLOT WAYPOINTS
+    % PLOT WAYPOINTS
     plot(wpMan.WPx,wpMan.WPy,'MarkerSize',10,'Marker','*','LineWidth',2,'LineStyle','none',...
     'Color',[0 0 0]);
 end
 
 if GVF == true
-    %% UAV parameters
+    %% UAV setup
+    bRunUAV = true;
     uav_v = uavVvelocity;
+    xVUAV = VFUAV(dt);
+    xVUAV = xVUAV.SetPosition([uavXStart ; uavYStart]);
+    uavTheta = deg2rad(0);
+    uo.vx = uav_v*cos(uavTheta);
+    uo.vy = uav_v*sin(uavTheta);
+    uo.heading = uavTheta;
+    
+    xVUAV = xVUAV.SetVelocityAndHeading(uo,uav_v); 
+    clear uo;
+    xVUAV.bVFControlVelocity=~true;
+    xVUAV.bVFControlHeading=~true;
+    xVUAV.bDubinsPathControl = true;
+    xVUAV.mTurnrate = turnrate;
+    xVUAV.bNormVFVectors = ~true;
+    
+    
+    % VF Wind setup
+    xVUAV.Wind    = uav.Wind;
+    xVUAV.WindDisturbance = uav.WindDisturbance;
+    xVUAV.WindCenterX = uav.WindCenterX;
+    xVUAV.WindCenterY = uav.WindCenterY;
+    xVUAV.WindXRange  = uav.WindXRange;
+    xVUAV.WindYRange  = uav.WindYRange;
+
 
     %% Obstacle field initial conditions
     ovfXc = obstX;
@@ -91,39 +116,15 @@ if GVF == true
     ovfDF = @VTanh;    %Function
     dfName = {'Hyperbolic Tangent'};
       
-    %% Animation options
-    bShowVectorField=true;
-    bRunUAV=true;
-    xVUAV = VFUAV(dt);
-    xVUAV = xVUAV.SetPosition([uavXStart ; uavYStart]);
-    uavTheta = deg2rad(0);
-    uo.vx = uav_v*cos(uavTheta);
-    uo.vy = uav_v*sin(uavTheta);
-    uo.heading = uavTheta;
-
-    xVUAV = xVUAV.SetVelocityAndHeading(uo,uav_v); 
-    clear uo;
-    xVUAV.bVFControlVelocity=~true;
-    xVUAV.bVFControlHeading=~true;
-    xVUAV.bDubinsPathControl = true;
-    xVUAV.mTurnrate = turnrate;
-    xVUAV.bNormVFVectors = ~true;
     
-    xVUAV.Wind    = uav.Wind;
-    xVUAV.WindDisturbance = uav.WindDisturbance;
-    xVUAV.WindCenterX = uav.WindCenterX;
-    xVUAV.WindCenterY = uav.WindCenterY;
-    xVUAV.WindXRange  = uav.WindXRange;
-    xVUAV.WindYRange  = uav.WindYRange;
-    
-    %% Create navigational vector fields    
+    %% Create path fields    
     line_theta = deg2rad(90);
     cVFR = GradientVectorField('Straight',1);
     cVFR.G = 1;
     cVFR.H = 30;
     cVFR.L = 0;
-    cVFR.xc = 10;
-    cVFR.yc = 10;
+    cVFR.xc = 0;
+    cVFR.yc = 0;
     cVFR.vel_x = 0;
     cVFR.vel_y = 0;
     cVFR.bUseVRel = ~true;
@@ -131,17 +132,17 @@ if GVF == true
     cVFR.line_theta = line_theta;
     
     
-    %% Create obstacle vector fields
+    %% Create obstacle fields
     clear avoidVF;
     avoidVF = {};
     ovfOpt = {};
 
     avoidVF = GradientVectorField('Gradient',ovfRadius);
     avoidVF.G = -1;
-    avoidVF.H  = -30;
+    avoidVF.H  = 30;
     avoidVF.L =  0;
-    avoidVF.xc = 75;
-    avoidVF.yc = 110;
+    avoidVF.xc = 0;
+    avoidVF.yc = 0;
     
     avoidVF2 = GradientVectorField('Gradient',ovfRadius);
     avoidVF2.G = -1;
@@ -150,8 +151,11 @@ if GVF == true
     avoidVF2.xc = 0;
     avoidVF2.yc = 0;
     
+    % Add UAVs to list
     UAVList = {xVUAV};
-    VFList = [cVFR,avoidVF2];
+    
+    % Add obstacles and paths to list
+    VFList = [cVFR,avoidVF];
     
     for i = 1:length(UAVList)
         for k=1:length(t_list)
@@ -172,6 +176,16 @@ if GVF == true
         end
     end
     
+    % PLOTTING UAV
+    scatter(UAV_X_POS, UAV_Y_POS,'b.')
+    axis equal;
+    xlim([uavXStart -uavXStart]);
+    ylim([uavXStart -uavXStart]);
+    set(gca, 'FontSize', 18)
+    grid on;
+    xlabel('X-Position [m]', 'FontSize', 14);
+    ylabel('Y-Position [m]', 'FontSize', 14);
+  
 end
 
 if plot_total_field == true
@@ -233,16 +247,6 @@ if plot_total_field == true
         h(11) = quiver(X,Y,normU,normV,'Color','b');
 end
 
-% PLOTTING UAV
-scatter(UAV_X_POS, UAV_Y_POS,'b.')
-axis equal;
-xlim([uavXStart -uavXStart]);
-ylim([uavXStart -uavXStart]);
-set(gca, 'FontSize', 18)
-grid on;
-xlabel('X-Position [m]', 'FontSize', 14);
-ylabel('Y-Position [m]', 'FontSize', 14);
-
 %% Decay functions go here
 function G = VTanh(rrin,obs_radius)
     r_non = rrin / obs_radius;
@@ -256,12 +260,12 @@ function G = NoVDecay(rrin,obs_radius)
 end
 
 % CIRCLE PLOTTER
-function h = circle(x,y,r)
+function h = circle(x,y,r,LineType)
     hold on
     th = 0:0.075:2*pi;
     xunit = r * cos(th) + x;
     yunit = r * sin(th) + y;
-    h = plot(xunit, yunit,'k--');
+    h = plot(xunit, yunit, LineType);
 end
 
 

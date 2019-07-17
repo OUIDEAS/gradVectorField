@@ -183,7 +183,7 @@ classdef VFUAV
                 hold on
                 uav_vy = uav_v*sin(theta) + obj.WindDisturbance;
                 plot(xfield,yfield,'g--','LineWidth',2);
-                scatter(uav_x,uav_y);
+%                 scatter(uav_x,uav_y);
             end
             % END WIND...................
             
